@@ -1,50 +1,45 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setCurrentUser(user);
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
 
-            if (user) {
-                try {
-                    const userRef = doc(db, "users", user.uid);
-                    const snap = await getDoc(userRef);
+        // 🔥 Fetch role from Firestore
+        const snap = await getDoc(doc(db, "users", firebaseUser.uid));
+        if (snap.exists()) {
+          setRole(snap.data().role);
+        } else {
+          setRole(null);
+        }
+      } else {
+        setUser(null);
+        setRole(null);
+      }
+      setLoading(false);
+    });
 
-                    if (snap.exists()) {
-                        setUserData(snap.data());
-                    } else {
-                        console.error("❌ User document not found in Firestore");
-                        setUserData(null);
-                    }
-                } catch (error) {
-                    console.error("❌ Firestore fetch error:", error);
-                }
-            } else {
-                setUserData(null);
-            }
+    return () => unsub();
+  }, []);
 
-            setLoading(false);
-        });
-
-        return unsubscribe;
-    }, []);
-
-    return (
-        <AuthContext.Provider
-            value={{ currentUser, userData, role: userData?.role, loading }}
-        >
-            {!loading && children}
-        </AuthContext.Provider>
-    );
+  return (
+    <AuthContext.Provider value={{ user, role, loading,sidebarOpen, setSidebarOpen }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  return useContext(AuthContext);
+};

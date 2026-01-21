@@ -17,8 +17,3 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-
-// 🔑 AUTO LOGIN
-signInAnonymously(auth)
-  .then(() => console.log("Firebase Authenticated"))
-  .catch((error) => console.error(error));

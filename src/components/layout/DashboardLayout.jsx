@@ -25,7 +25,6 @@ const DashboardLayout = ({ children }) => {
 
         {/* Footer */}
         <Footer />
-
       </div>
     </div>
   );

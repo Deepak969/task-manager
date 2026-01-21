@@ -5,7 +5,8 @@ import { useAuth } from "../../context/AuthContext";
 
 const Header = () => {
     const navigate = useNavigate();
-    const { currentUser, userData } = useAuth(); 
+    const { currentUser, userData } = useAuth();
+
     console.log(userData);
 
     const handleLogout = async () => {
@@ -20,20 +21,19 @@ const Header = () => {
         <header className="nxl-header">
             <div className="header-wrapper">
                 <div className="header-left d-flex align-items-center gap-4">
-                    <a href="/#" onClick={(e) => e.preventDefault()} className="nxl-head-mobile-toggler" id="mobile-collapse">
-                        <div className="hamburger hamburger--arrowturn">
-                            <div className="hamburger-box">
-                                <div className="hamburger-inner"></div>
+                    <a href="/#" onClick={(e) => e.preventDefault()} class="nxl-head-mobile-toggler" id="mobile-collapse">
+                        <div class="hamburger hamburger--arrowturn">
+                            <div class="hamburger-box">
+                                <div class="hamburger-inner"></div>
                             </div>
                         </div>
                     </a>
-                    <div className="nxl-navigation-toggle">
+                    <div class="nxl-navigation-toggle">
                         <a href="/#" onClick={(e) => e.preventDefault()} id="menu-mini-button">
-                            <i className="feather-align-left"></i>
+                            <i class="feather-align-left"></i>
                         </a>
-                        <a href="/#" onClick={(e) => e.preventDefault()} id="menu-expend-button" style={{ display: "none" }}
-                        >
-                            <i className="feather-arrow-right"></i>
+                        <a href="/#" onClick={(e) => e.preventDefault()} id="menu-expend-button" style={{display: 'none'}}>
+                            <i class="feather-arrow-right"></i>
                         </a>
                     </div>
                     <div className="nxl-lavel-mega-menu-toggle d-flex d-lg-none">
@@ -166,12 +166,12 @@ const Header = () => {
                         </div>
                         <div className="dropdown nxl-h-item">
                             <a href="/#" onClick={(e) => e.preventDefault()} data-bs-toggle="dropdown" role="button" data-bs-auto-close="outside">
-                                <img src="assets/images/avatar/1.png" alt="user-image" className="img-fluid user-avtar me-0" />
+                                <img src="https://i.pravatar.cc/150?img=8" alt="user-image" class="img-fluid user-avtar me-0" />
                             </a>
-                            <div className="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown">
-                                <div className="dropdown-header">
-                                    <div className="d-flex align-items-center">
-                                        <img src="assets/images/avatar/1.png" alt="user-image" className="img-fluid user-avtar" />
+                            <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown">
+                                <div class="dropdown-header">
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://i.pravatar.cc/150?img=8" alt="user-image" class="img-fluid user-avtar" />
                                         <div>
                                             <h6 className="text-dark mb-0">
                                                 {userData?.name || "User"}

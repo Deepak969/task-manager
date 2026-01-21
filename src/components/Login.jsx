@@ -37,7 +37,7 @@ const Login = () => {
       }
 
       const userData = userSnap.data();
-
+      console.log(userData);
       // Role-based redirect
       if (userData.role === "admin") {
         navigate("/dashboard");

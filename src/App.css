@@ -3,6 +3,21 @@ body {
   background: #f4f6f8;
 }
 
+/* Mobile sidebar */
+body.sidebar-open .nxl-sidebar {
+  transform: translateX(0);
+}
+
+.nxl-sidebar {
+  transform: translateX(-100%);
+  transition: all 0.3s ease;
+}
+
+/* Collapsed sidebar */
+body.sidebar-collapsed .nxl-sidebar {
+  width: 70px;
+}
+
 .container {
   width: 90%;
   max-width: 900px;
@@ -43,4 +58,14 @@ table th,
 table td {
   border: 1px solid #ddd;
   padding: 10px;
+}
+
+.nxl-navigation-collapsed {
+  width: 70px;
+}
+
+.nxl-navigation-collapsed .nxl-mtext,
+.nxl-navigation-collapsed .nxl-caption,
+.nxl-navigation-collapsed .nxl-submenu {
+  display: none;
 }
