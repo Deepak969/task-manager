@@ -1,35 +1,76 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
 
 const TaskPage = () => {
     const [taskName, setTaskName] = useState("");
     const [taskDescription, setTaskDescription] = useState("");
     const [email, setEmail] = useState("");
     const [files, setFiles] = useState([]);
-    
+
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log({
-            taskName,
-            taskDescription,
-            email,
-            files,
-        });
+        if (!taskName || !taskDescription || !email) return;
 
-        // Reset
-        setTaskName("");
-        setTaskDescription("");
-        setEmail("");
-        setFiles([]);
+        try {
+            // 🔹 Upload files to cPanel
+            const uploadedFiles = [];
+
+            if (files.length > 0) {
+                const formData = new FormData();
+
+                for (const file of files) {
+                    formData.append("files[]", file);
+                }
+
+                const response = await fetch(
+                    "https://data.upgov.net/api/upload.php",
+                    {
+                        method: "POST",
+                        body: formData,
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error("File upload failed");
+                }
+
+                uploadedFiles.push(...result.files);
+            }
+
+            // 🔹 Save to Firestore
+            await addDoc(collection(db, "tasks"), {
+                taskName,
+                taskDescription,
+                email,
+                files: uploadedFiles,
+                status: "Pending",
+                assignedTo: null,
+                createdAt: serverTimestamp(),
+            });
+
+            alert("✅ Task saved successfully");
+
+            setTaskName("");
+            setTaskDescription("");
+            setEmail("");
+            setFiles([]);
+
+        } catch (error) {
+            console.error("Error:", error);
+            alert("❌ Task save failed");
+        }
     };
 
     return (
         <div className="main-content">
             <div className="container-fluid">
-
                 {/* Center Wrapper */}
                 <div className="row justify-content-center">
                     <div className="col-xl-6 col-lg-7 col-md-9">

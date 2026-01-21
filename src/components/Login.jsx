@@ -1,34 +1,78 @@
 import React, { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    // 🔐 Login logic (API / Firebase / Backend)
-    console.log({
-      email,
-      password,
-      rememberMe,
-    });
+    try {
+      // 🔐 Firebase Auth Login
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      const user = userCredential.user;
+
+      // 📄 Get user role from Firestore
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        throw new Error("User data not found");
+      }
+
+      const userData = userSnap.data();
+
+      // Role-based redirect
+      if (userData.role === "admin") {
+        navigate("/dashboard");
+      } else {
+        navigate("/my-tasks");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Invalid email or password");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main className="auth-minimal-wrapper">
       <div className="auth-minimal-inner">
         <div className="minimal-card-wrapper">
-          <div className="card mb-4 mt-5 mx-4 mx-sm-0 position-relative"> 
+          <div className="card mb-4 mt-5 mx-4 mx-sm-0 position-relative">
             <div className="card-body p-sm-5">
-              <h2 className="fs-20 fw-bolder mb-4 text-center">Login</h2>              
+
+              <h2 className="fs-20 fw-bolder mb-4 text-center">Login</h2>
+
+              {error && (
+                <div className="alert alert-danger text-center">
+                  {error}
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="w-100 mt-4 pt-2">
                 <div className="mb-4">
                   <input
                     type="email"
                     className="form-control"
-                    placeholder="Email or Username"
+                    placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -47,16 +91,16 @@ const Login = () => {
                 </div>
 
                 <div className="d-flex align-items-center justify-content-between">
-                  <div className="custom-control custom-checkbox">
+                  <div className="form-check">
                     <input
                       type="checkbox"
-                      className="custom-control-input"
+                      className="form-check-input"
                       id="rememberMe"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
                     />
                     <label
-                      className="custom-control-label c-pointer"
+                      className="form-check-label"
                       htmlFor="rememberMe"
                     >
                       Remember Me
@@ -69,39 +113,15 @@ const Login = () => {
                 </div>
 
                 <div className="mt-5">
-                  <button type="submit" className="btn btn-lg btn-primary w-100">
-                    Login
+                  <button
+                    type="submit"
+                    className="btn btn-lg btn-primary w-100"
+                    disabled={loading}
+                  >
+                    {loading ? "Logging in..." : "Login"}
                   </button>
                 </div>
               </form>
-
-              {/* <div className="w-100 mt-5 text-center mx-auto">
-                <div className="mb-4 border-bottom position-relative">
-                  <span className="small py-1 px-3 text-uppercase text-muted bg-white position-absolute translate-middle">
-                    or
-                  </span>
-                </div>
-
-                <div className="d-flex align-items-center justify-content-center gap-2">
-                  <button className="btn btn-light-brand flex-fill" title="Facebook">
-                    <i className="feather-facebook"></i>
-                  </button>
-                  <button className="btn btn-light-brand flex-fill" title="Twitter">
-                    <i className="feather-twitter"></i>
-                  </button>
-                  <button className="btn btn-light-brand flex-fill" title="Github">
-                    <i className="feather-github"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-5 text-muted">
-                <span> Don't have an account? </span>
-                <a href="/register" className="fw-bold">
-                  Create an Account
-                </a>
-              </div> */}
-
             </div>
           </div>
         </div>
