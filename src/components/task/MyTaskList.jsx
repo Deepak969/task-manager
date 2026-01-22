@@ -2,21 +2,31 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import TaskDetailsModal from "./TaskDetailsModal";
 
 const MyTaskList = () => {
   const [tasks, setTasks] = useState([]);
   const [userId, setUserId] = useState(null);
 
+  // ✅ Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+
+  /* -----------------------------------
+     AUTH USER
+  ----------------------------------- */
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("Logged in UID:", user.uid);
         setUserId(user.uid);
       }
     });
     return () => unsub();
   }, []);
 
+  /* -----------------------------------
+     FETCH TASKS
+  ----------------------------------- */
   useEffect(() => {
     if (userId) fetchTasks();
   }, [userId]);
@@ -29,7 +39,7 @@ const MyTaskList = () => {
       );
 
       const snapshot = await getDocs(q);
-      const list = snapshot.docs.map(doc => ({
+      const list = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data()
       }));
@@ -38,6 +48,14 @@ const MyTaskList = () => {
     } catch (err) {
       console.error("Task fetch error:", err);
     }
+  };
+
+  /* -----------------------------------
+     OPEN MODAL
+  ----------------------------------- */
+  const openModal = (taskId) => {
+    setSelectedTaskId(taskId);
+    setShowModal(true);
   };
 
   return (
@@ -54,80 +72,63 @@ const MyTaskList = () => {
               <div className="card stretch stretch-full h-100">
                 <div className="card-body">
 
-                  {/* Header */}
-                  <div className="d-flex align-items-start justify-content-between mb-3">
-                    <div className="d-flex gap-3 align-items-center">
-                      <div className="avatar-text avatar-lg bg-gray-200">
-                        <i className="feather feather-clipboard"></i>
-                      </div>
-
-                      <div>
-                        <div className="fs-15 fw-bold text-dark text-truncate">
-                          {task.taskName}
-                        </div>
-                        <div className="fs-12 text-muted text-truncate-2-line">
-                          {task.taskDescription}
-                        </div>
-                      </div>
-                    </div>                  
+                  {/* HEADER */}
+                  <div className="d-flex justify-content-between mb-3">
+                    <div>
+                      <h6 className="fw-bold">{task.taskName}</h6>
+                      <p className="fs-12 text-muted">
+                        {task.taskDescription}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Email */}
+                  {/* EMAIL */}
                   <div className="fs-12 text-muted mb-2">
-                    <i className="feather feather-mail me-1"></i>
+                    <i className="feather-mail me-1"></i>
                     {task.email}
                   </div>
-                
-                  {/* Files */}
-                  <div className="mb-3">
-                    {task.files && task.files.length > 0 ? (
-                      task.files.map((file, i) => (
-                        <div key={i}>
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="fs-12 fw-semibold text-primary"
-                          >
-                            {file.name}
-                          </a>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="fs-12 text-muted">No files</span>
-                    )}
+
+                  {/* DATE */}
+                  <div className="fs-12 text-muted mb-3">
+                    {task.createdAt?.seconds
+                      ? new Date(task.createdAt.seconds * 1000).toDateString()
+                      : "-"}
                   </div>
 
-                  {/* Footer */}
-                  <div className="d-flex align-items-center justify-content-between mt-3">
-                    <span className="fs-11 text-muted">
-                      {task.createdAt?.seconds
-                        ? new Date(
-                          task.createdAt.seconds * 1000
-                        ).toLocaleDateString()
-                        : "—"}
-                    </span>
+                  {/* STATUS */}
+                  <span className={`badge mb-3 d-inline-block
+                    ${task.status === "Completed"
+                      ? "bg-success"
+                      : "bg-primary"}
+                  `}>
+                    {task.status}
+                  </span>
 
-                    <span
-                      className={`badge ${task.status === "Completed"
-                          ? "bg-soft-success text-success"
-                          : task.status === "Assigned"
-                            ? "bg-soft-primary text-primary"
-                            : task.status === "In Progress"
-                              ? "bg-soft-warning text-warning"
-                              : "bg-soft-secondary text-secondary"
-                        }`}
+                  {/* ACTION */}
+                  {task.status !== "Completed" && (
+                    <button
+                      className="btn btn-outline-success btn-sm w-100 mt-3"
+                      onClick={() => openModal(task.id)}
                     >
-                      {task.status}
-                    </span>
-                  </div>
+                      Update Task
+                    </button>
+                  )}
 
                 </div>
               </div>
             </div>
           ))
         )}
-      </div>     
+
+      </div>
+
+      {/* ✅ MODAL COMPONENT */}
+      <TaskDetailsModal
+        show={showModal}
+        taskId={selectedTaskId}
+        onClose={() => setShowModal(false)}
+        onUpdated={fetchTasks}
+      />
     </div>
   );
 };

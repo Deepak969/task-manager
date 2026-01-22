@@ -86,26 +86,28 @@ const TaskList = () => {
                     </div>
 
                     {/* Action */}
-                    <div className="dropdown">
-                      <button
-                        className="btn btn-sm btn-light"
-                        data-bs-toggle="dropdown"
-                      >
-                        <i className="feather feather-more-vertical"></i>
-                      </button>
+                    {!task.assignedTo && (
+                      <div className="dropdown">
+                        <button
+                          className="btn btn-sm btn-light"
+                          data-bs-toggle="dropdown"
+                        >
+                          <i className="feather feather-more-vertical"></i>
+                        </button>
 
-                      <ul className="dropdown-menu dropdown-menu-end">
-                        <li>
-                          <button
-                            className="dropdown-item"
-                            onClick={() => setSelectedTaskId(task.id)}
-                          >
-                            <i className="feather feather-user-plus me-2"></i>
-                            Assign Task
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
+                        <ul className="dropdown-menu dropdown-menu-end">
+                          <li>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => setSelectedTaskId(task.id)}
+                            >
+                              <i className="feather feather-user-plus me-2"></i>
+                              Assign Task
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
                   </div>
 
                   {/* Email */}
@@ -142,6 +144,43 @@ const TaskList = () => {
                     )}
                   </div>
 
+                  {/* COMPLETION DETAILS (ADMIN VIEW) */}
+                  {task.status === "Completed" && (
+                    <div className="border-top pt-3 mt-3">
+
+                      <div className="fs-12 fw-semibold text-success mb-1">
+                        <i className="feather-check-circle me-1"></i>
+                        Task Completed
+                      </div>
+
+                      {task.completionDescription && (
+                        <p className="fs-12 text-muted mb-2">
+                          {task.completionDescription}
+                        </p>
+                      )}
+
+                      {task.completionFile && (
+                        <a
+                          href={task.completionFile.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-sm btn-outline-primary"
+                        >
+                          <i className="feather-eye me-1"></i>
+                          View Proof
+                        </a>
+                      )}
+
+                      <div className="fs-11 text-muted mt-2">
+                        Completed on:{" "}
+                        {task.completedAt?.seconds
+                          ? new Date(task.completedAt.seconds * 1000).toLocaleDateString()
+                          : "-"}
+                      </div>
+
+                    </div>
+                  )}
+
                   {/* Footer */}
                   <div className="d-flex align-items-center justify-content-between mt-3">
                     <span className="fs-11 text-muted">
@@ -154,12 +193,12 @@ const TaskList = () => {
 
                     <span
                       className={`badge ${task.status === "Completed"
-                          ? "bg-soft-success text-success"
-                          : task.status === "Assigned"
-                            ? "bg-soft-primary text-primary"
-                            : task.status === "In Progress"
-                              ? "bg-soft-warning text-warning"
-                              : "bg-soft-secondary text-secondary"
+                        ? "bg-soft-success text-success"
+                        : task.status === "Assigned"
+                          ? "bg-soft-primary text-primary"
+                          : task.status === "In Progress"
+                            ? "bg-soft-warning text-warning"
+                            : "bg-soft-secondary text-secondary"
                         }`}
                     >
                       {task.status}
